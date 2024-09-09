@@ -19,7 +19,7 @@ app = Flask(__name__)
 genai.configure(api_key=API_KEY)
 
 # Initialize the Gemini model
-model = genai.GenerativeModel("gemini-1.5-turbo")
+model = genai.GenerativeModel("gemini-1.5-flash")
 
 # Function to extract text from PDF using pdfplumber
 def extract_pdf_content(file):
