@@ -18,6 +18,9 @@ app = Flask(__name__)
 # Configure Google Gemini API key
 genai.configure(api_key=API_KEY)
 
+# Initialize the Gemini model
+model = genai.GenerativeModel('gemini-1.5-turbo')
+
 # Function to extract text from PDF using pdfplumber
 def extract_pdf_content(file):
     text = ""
@@ -60,8 +63,9 @@ def upload_resume():
                       f"Resume:\n{content}\n\n"
                       f"Job Description:\n{job_description}")
             
-            response = genai.generate_text(model="gemini-1.5-turbo", prompt=prompt)
-            optimized_resume = response['candidates'][0]['output'].strip()
+            # Correctly initialize and call the Gemini model's generate_content method
+            response = model.generate_content(prompt=prompt)
+            optimized_resume = response.text.strip()
         except Exception as e:
             return f"An error occurred while processing your resume: {str(e)}", 500
         
@@ -85,9 +89,10 @@ def improve_look_and_feel():
                       f"name, contact_info, summary, experience (with responsibilities), education, skills, and achievements.\n\n"
                       f"Resume:\n{resume_content}")
 
-            response = genai.generate_text(model="gemini-1.5-turbo", prompt=prompt)
+            # Correctly initialize and call the Gemini model's generate_content method
+            response = model.generate_content(prompt=prompt)
 
-            raw_response = response['candidates'][0]['output'].strip()
+            raw_response = response.text.strip()
             print("Raw Gemini Response:", raw_response)
 
             clean_response = re.sub(r'```json|```', '', raw_response).strip()
