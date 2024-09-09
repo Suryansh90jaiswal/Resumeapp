@@ -4,9 +4,13 @@ import google.generativeai as genai
 import os
 import json
 import re
+from dotenv import load_dotenv
 
-# Set the API key directly in the Flask app
-API_KEY = os.getenv("GENAI_API_KEY")  # Use environment variables for sensitive data
+# Load environment variables from .env file
+load_dotenv()
+
+# Set the API key from environment variable
+API_KEY = os.getenv("GOOGLE_API_KEY")
 
 # Create the Flask app instance
 app = Flask(__name__)
@@ -14,10 +18,7 @@ app = Flask(__name__)
 # Configure Google Gemini API key
 genai.configure(api_key=API_KEY)
 
-# Initialize the Gemini model
-model = genai.model("gemini-1.5-turbo")
-
-# Function to extract text from PDF using pdfplumber for better accuracy
+# Function to extract text from PDF using pdfplumber
 def extract_pdf_content(file):
     text = ""
     with pdfplumber.open(file) as pdf:
@@ -59,8 +60,8 @@ def upload_resume():
                       f"Resume:\n{content}\n\n"
                       f"Job Description:\n{job_description}")
             
-            response = model.generate(prompt)
-            optimized_resume = response.text.strip()
+            response = genai.generate_text(model="gemini-1.5-turbo", prompt=prompt)
+            optimized_resume = response['candidates'][0]['output'].strip()
         except Exception as e:
             return f"An error occurred while processing your resume: {str(e)}", 500
         
@@ -70,7 +71,7 @@ def upload_resume():
     except Exception as e:
         return f"An unexpected error occurred: {str(e)}", 500
 
-# Route to improve the look and feel of the resume based on Gemini API
+# Route to improve the look and feel of the resume based on Gemini AI
 @app.route('/improve_look_and_feel', methods=['POST'])
 def improve_look_and_feel():
     try:
@@ -84,9 +85,9 @@ def improve_look_and_feel():
                       f"name, contact_info, summary, experience (with responsibilities), education, skills, and achievements.\n\n"
                       f"Resume:\n{resume_content}")
 
-            response = model.generate(prompt)
+            response = genai.generate_text(model="gemini-1.5-turbo", prompt=prompt)
 
-            raw_response = response.text.strip()
+            raw_response = response['candidates'][0]['output'].strip()
             print("Raw Gemini Response:", raw_response)
 
             clean_response = re.sub(r'```json|```', '', raw_response).strip()
@@ -114,6 +115,4 @@ def improve_look_and_feel():
         return f"An unexpected error occurred: {str(e)}", 500
 
 if __name__ == "__main__":
-    # Set host and port for Render deployment
-    port = int(os.environ.get('PORT', 8000))
-    app.run(host='0.0.0.0', port=port)
+    app.run(debug=True)
