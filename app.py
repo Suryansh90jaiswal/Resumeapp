@@ -86,24 +86,25 @@ def improve_look_and_feel():
             return "No resume content provided.", 400
 
         try:
-            # Correct Gemini API call as per your provided example
-            model = genai.GenerativeModel("gemini-1.5-flash")
             prompt = (f"Take the following improved resume and format it in a structured JSON format with fields: "
                       f"name, contact_info, summary, experience (with responsibilities), education, skills, and achievements.\n\n"
                       f"Resume:\n{resume_content}")
-            response = model.generate_content(prompt)
+
+            # Call Google Gemini API
+            response = genai.generate_content(model="gemini-1.5-flash", prompt=prompt)
 
             raw_response = response.text.strip()
             print("Raw Gemini Response:", raw_response)
 
-            # Clean the response (if there are issues with extra characters)
+            # Clean the response
             clean_response = re.sub(r'```json|```', '', raw_response).strip()
 
-            if not clean_response:
-                return "Google Gemini API returned an empty response.", 500
+            # Validate if the cleaned response looks like valid JSON
+            if not clean_response.startswith("{") or not clean_response.endswith("}"):
+                raise ValueError("Response does not appear to be valid JSON")
 
+            # Try parsing the JSON response
             try:
-                # Safely parse the JSON, and handle any errors
                 formatted_resume = json.loads(clean_response)
             except json.JSONDecodeError as e:
                 # Log raw response for debugging
@@ -111,8 +112,10 @@ def improve_look_and_feel():
                 print("Raw Response:", raw_response)
                 return f"Error parsing the JSON response: {str(e)}", 500
 
+            # Ensure the formatted resume is a dictionary
             formatted_resume = formatted_resume if isinstance(formatted_resume, dict) else {}
 
+            # Ensure 'achievements' is properly formatted as a list of strings
             if isinstance(formatted_resume.get('achievements'), list):
                 formatted_resume['achievements'] = [str(ach) for ach in formatted_resume['achievements']]
 
