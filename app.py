@@ -2,6 +2,7 @@ from flask import Flask, request, render_template
 import pdfplumber
 import google.generativeai as genai
 import os
+import json  # Import the missing json module
 import re
 from dotenv import load_dotenv
 
