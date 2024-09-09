@@ -65,7 +65,8 @@ def upload_resume():
             
             # Correct model usage for generating text
             model = genai.GenerativeModel("gemini-1.5-flash")
-            response = model.generate_content(prompt=prompt)
+            response = model.generate_content(prompt)  # Pass the prompt directly without keyword
+
             optimized_resume = response.text.strip()
 
         except Exception as e:
@@ -93,7 +94,7 @@ def improve_look_and_feel():
 
             # Use the correct model call
             model = genai.GenerativeModel("gemini-1.5-flash")
-            response = model.generate_content(prompt=prompt)
+            response = model.generate_content(prompt)  # Pass the prompt directly
 
             raw_response = response.text.strip()
             print("Raw Gemini Response:", raw_response)
