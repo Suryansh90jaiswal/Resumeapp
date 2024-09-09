@@ -25,10 +25,16 @@
             position: relative;
         }
 
-        h1 {
+        .hero-section h1 {
             font-size: 48px;
             margin-bottom: 20px;
             color: #f2f2f2;
+        }
+
+        .hero-section p {
+            font-size: 20px;
+            margin-bottom: 40px;
+            color: #d3d3d3;
         }
 
         .optimized-result {
@@ -52,51 +58,96 @@
             line-height: 1.5;
         }
 
-        /* Final Resume button on the top-right */
-        #finalResumeBtn {
-            position: absolute;
-            top: 20px;
-            right: 20px;
+        /* Button styling */
+        .btn {
             background-color: #ff7f50;
             color: white;
             padding: 10px 20px;
             border: none;
             border-radius: 5px;
             cursor: pointer;
+            font-size: 16px;
+            position: absolute;
         }
 
-        /* New Job Resume button on the top-left */
-        #newJobResumeBtn {
-            position: absolute;
+        /* Positioning the buttons */
+        #newResumeBtn {
             top: 20px;
             left: 20px;
-            background-color: #ff7f50;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
+        }
+
+        #improveBtn {
+            top: 20px;
+            right: 20px;
+        }
+
+        .btn:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        /* Lottie Loader Style */
+        #lottie-loader {
+            display: none;
+            margin-bottom: 20px;
+        }
+
+        /* Centering loader above the title */
+        .lottie-container {
+            position: absolute;
+            top: 100px; /* Adjust to position the loader properly above the title */
+            left: 50%;
+            transform: translateX(-50%);
+            width: 150px;
+            height: 150px;
         }
 
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Check Your Optimized Resume</h1>
-        <div class="optimized-result">
-            <pre>{{ optimized_resume }}</pre>
+        <!-- Lottie Loader -->
+        <div id="lottie-loader" class="lottie-container">
+            <lottie-player src="https://lottie.host/5f6afc02-0505-4586-bc83-87e8f129393f/jHipnNRLv0.json" background="transparent" speed="1" style="width: 100%; height: 100%;" loop autoplay></lottie-player>
         </div>
 
-        <!-- New Job Resume Button in the top-left corner -->
-        <a href="{{ url_for('upload_form') }}">
-            <button id="newJobResumeBtn">New Job Resume</button>
-        </a>
+        <!-- Hero Section -->
+        <div class="hero-section">
+            <h1>Optimized Resume with AI</h1>
+            <p>Check your optimized resume and input below.</p>
+        </div>
 
-        <!-- Create Final Resume Button in the top-right corner -->
-        <form action="{{ url_for('improve_look_and_feel') }}" method="POST" style="display:inline;">
+        <!-- Optimized Resume Output Section -->
+        <div id="optimizedResume" class="optimized-result">
+            <h2>Optimized Resume</h2>
+            <pre id="resumeOutput">{{ optimized_resume | safe }}</pre>
+        </div>
+
+        <!-- Buttons Section -->
+        <button class="btn" id="newResumeBtn" onclick="startNewResume()">New Job Resume</button>
+        <form action="/improve_look_and_feel" method="POST" id="improveForm">
             <input type="hidden" name="resume_content" value="{{ optimized_resume }}">
-            <button type="submit" id="finalResumeBtn">Create Final Resume</button>
+            <button type="submit" class="btn" id="improveBtn">Create Final Resume</button>
         </form>
     </div>
+
+    <!-- Include Lottie Player Script -->
+    <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+
+    <!-- Loader Script -->
+    <script>
+        document.getElementById('improveForm').addEventListener('submit', function(event) {
+            // Show the lottie loader when the "Create Final Resume" button is clicked
+            document.getElementById('lottie-loader').style.display = 'block';
+
+            // Disable the button to prevent multiple submissions
+            document.getElementById('improveBtn').disabled = true;
+        });
+
+        function startNewResume() {
+            // Redirect to the default page (or refresh the form)
+            window.location.href = "/";
+        }
+    </script>
 </body>
 </html>
