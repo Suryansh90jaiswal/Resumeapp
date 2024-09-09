@@ -1,0 +1,4 @@
+flask
+pdfplumber
+google-generativeai
+werkzeug==2.3.6

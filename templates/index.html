@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resume Improvement App</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Montserrat', sans-serif;
+            background-color: #1a1a1a;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            padding: 20px;
+            text-align: center;
+            position: relative; /* Required for absolute positioning of the button */
+        }
+
+        .hero-section h1 {
+            font-size: 48px;
+            margin-bottom: 20px;
+            color: #f2f2f2;
+        }
+
+        .hero-section p {
+            font-size: 20px;
+            margin-bottom: 40px;
+            color: #d3d3d3;
+        }
+
+        .upload-form {
+            margin-top: 40px;
+            text-align: center;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        label {
+            background-color: #ff7f50;
+            color: white;
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .optimized-result {
+            background-color: #2c2c2c;
+            padding: 20px;
+            margin-top: 20px;
+            border-radius: 10px;
+            color: white;
+            max-width: 100%;
+            max-height: 700px;
+            overflow-y: auto;
+            text-align: left;
+            white-space: pre-wrap;
+        }
+
+        pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 16px;
+            line-height: 1.5;
+        }
+
+        footer {
+            background-color: #333;
+            color: white;
+            text-align: center;
+            padding: 20px 0;
+            margin-top: 40px;
+        }
+
+        @media (max-width: 768px) {
+            .hero-section h1 {
+                font-size: 36px;
+            }
+
+            .hero-section p {
+                font-size: 18px;
+            }
+        }
+
+        #loader {
+            display: none;
+            margin-top: 20px;
+            font-size: 20px;
+            color: #ff7f50;
+        }
+
+        /* New Styles for the bigger job description box */
+        textarea#job_description {
+            width: 100%;
+            height: 400px; /* Equivalent to around 200 lines */
+            resize: none;
+            border-radius: 5px;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            background-color: #333;
+            color: white;
+        }
+
+        /* Styling for the "Create Final Resume" button */
+        #improveBtn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background-color: #ff7f50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Hero Section -->
+        <div class="hero-section">
+            <h1>Optimize Your Resume with AI</h1>
+            <p>Let AI analyze and improve your resume for the job you're applying for.</p>
+        </div>
+
+        <!-- Loader -->
+        <div id="loader">
+            <p>Loading, please wait...</p>
+        </div>
+
+        <!-- Upload Form -->
+        <div class="upload-form" id="resumeFormSection">
+            <form action="/upload" method="POST" enctype="multipart/form-data" id="resumeForm">
+                <label for="resume">Upload & Optimize Your Resume (PDF Only)</label>
+                <input type="file" id="resume" name="resume" accept=".pdf">
+
+                <!-- Enlarged Job Description Text Area -->
+                <div style="margin-top: 20px;">
+                    <textarea id="job_description" name="job_description" placeholder="Paste the job description here..."></textarea>
+                </div>
+
+                <div style="margin-top: 20px;">
+                    <button type="submit" id="submitBtn" style="background-color: #ff7f50; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer;">Submit</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Optimized Resume Output Section -->
+        <div id="optimizedResume" class="optimized-result" style="display: {{ 'block' if optimized_resume else 'none' }};">
+            <h2>Optimized Resume</h2>
+            <pre id="resumeOutput">{{ optimized_resume | safe }}</pre>
+
+            <!-- Improve look and feel button -->
+            <form action="/improve_look_and_feel" method="POST" id="improveForm">
+                <input type="hidden" name="resume_content" value="{{ optimized_resume }}">
+                <button type="submit" id="improveBtn">Create Final Resume</button>
+            </form>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2024 Resume Improvement App. All Rights Reserved.</p>
+    </footer>
+
+    <!-- Loader and Error Handling Script -->
+    <script>
+        // Show loader when the "Submit" button is clicked
+        document.getElementById('resumeForm').addEventListener('submit', function(event) {
+            const jobDescription = document.getElementById('job_description').value.trim();
+
+            // Check if the job description is empty
+            if (jobDescription === '') {
+                event.preventDefault();  // Prevent form submission
+                alert("To proceed, please paste the job description.");
+                return;
+            }
+
+            // Show the loader when the form is submitted
+            document.getElementById('loader').style.display = 'block';
+
+            // Hide the form during the loading process
+            document.getElementById('resumeFormSection').style.display = 'none';
+        });
+
+        // Show loader when the "Create Final Resume" button is clicked
+        document.getElementById('improveForm').addEventListener('submit', function() {
+            // Show loader
+            document.getElementById('loader').style.display = 'block';
+
+            // Hide the improve button during processing
+            document.getElementById('improveBtn').style.display = 'none';
+        });
+    </script>
+</body>
+</html>
