@@ -2,7 +2,6 @@ from flask import Flask, request, render_template
 import pdfplumber
 import google.generativeai as genai
 import os
-import json
 import re
 from dotenv import load_dotenv
 
@@ -58,14 +57,14 @@ def upload_resume():
             return f"Error processing PDF: {str(e)}", 500
 
         try:
-            # Update the model name with 'models/' prefix
+            # Correct Gemini API call as per your provided example
+            model = genai.GenerativeModel("gemini-1.5-flash")
             prompt = (f"Please improve the following resume text based on the job description. "
                       f"Make it more organized, concise, and impactful.\n\n"
                       f"Resume:\n{content}\n\n"
                       f"Job Description:\n{job_description}")
-            
-            response = genai.generate_text(model="models/gemini-1.5-turbo", prompt=prompt)
-            optimized_resume = response['candidates'][0]['output'].strip()
+            response = model.generate_content(prompt)
+            optimized_resume = response.text.strip()
 
         except Exception as e:
             return f"An error occurred while processing your resume: {str(e)}", 500
@@ -86,14 +85,14 @@ def improve_look_and_feel():
             return "No resume content provided.", 400
 
         try:
-            # Update the model name with 'models/' prefix
+            # Correct Gemini API call as per your provided example
+            model = genai.GenerativeModel("gemini-1.5-flash")
             prompt = (f"Take the following improved resume and format it in a structured JSON format with fields: "
                       f"name, contact_info, summary, experience (with responsibilities), education, skills, and achievements.\n\n"
                       f"Resume:\n{resume_content}")
+            response = model.generate_content(prompt)
 
-            response = genai.generate_text(model="models/gemini-1.5-flash", prompt=prompt)
-
-            raw_response = response['candidates'][0]['output'].strip()
+            raw_response = response.text.strip()
             print("Raw Gemini Response:", raw_response)
 
             # Clean the response (if there are issues with extra characters)
