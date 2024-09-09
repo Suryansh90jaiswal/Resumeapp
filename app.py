@@ -63,9 +63,9 @@ def upload_resume():
                       f"Resume:\n{content}\n\n"
                       f"Job Description:\n{job_description}")
             
-            # Correctly initialize and call the Gemini model's generate_content method
-            response = model.generate_content(prompt=prompt)
-            optimized_resume = response.text.strip()
+            # Correct API call, now using the "messages" parameter
+            response = model.generate_content(messages=[{"content": prompt}])
+            optimized_resume = response['candidates'][0]['output'].strip()
         except Exception as e:
             return f"An error occurred while processing your resume: {str(e)}", 500
         
@@ -89,10 +89,10 @@ def improve_look_and_feel():
                       f"name, contact_info, summary, experience (with responsibilities), education, skills, and achievements.\n\n"
                       f"Resume:\n{resume_content}")
 
-            # Correctly initialize and call the Gemini model's generate_content method
-            response = model.generate_content(prompt=prompt)
+            # Correct API call, now using the "messages" parameter
+            response = model.generate_content(messages=[{"content": prompt}])
 
-            raw_response = response.text.strip()
+            raw_response = response['candidates'][0]['output'].strip()
             print("Raw Gemini Response:", raw_response)
 
             clean_response = re.sub(r'```json|```', '', raw_response).strip()
