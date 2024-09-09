@@ -114,5 +114,7 @@ def improve_look_and_feel():
         print(f"An unexpected error occurred: {str(e)}")
         return f"An unexpected error occurred: {str(e)}", 500
 
+# Run the app on the environment's port (needed for deployment on platforms like Render)
 if __name__ == "__main__":
-    app.run(debug=True)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port, debug=True)
