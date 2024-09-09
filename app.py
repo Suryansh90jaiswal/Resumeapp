@@ -1,4 +1,4 @@
-from flask import Flask, request, render_template, redirect, url_for
+from flask import Flask, request, render_template
 import pdfplumber
 import google.generativeai as genai
 import os
@@ -9,17 +9,17 @@ from dotenv import load_dotenv
 # Load environment variables from .env file
 load_dotenv()
 
-# Set the API key from environment variable
+# Get API key from environment variable
 API_KEY = os.getenv("GOOGLE_API_KEY")
+
+if not API_KEY:
+    raise ValueError("GOOGLE_API_KEY is not set in environment variables")
 
 # Create the Flask app instance
 app = Flask(__name__)
 
 # Configure Google Gemini API key
 genai.configure(api_key=API_KEY)
-
-# Initialize the Gemini model
-model = genai.GenerativeModel("gemini-1.5-flash")
 
 # Function to extract text from PDF using pdfplumber
 def extract_pdf_content(file):
@@ -63,9 +63,9 @@ def upload_resume():
                       f"Resume:\n{content}\n\n"
                       f"Job Description:\n{job_description}")
             
-            # Correct API call using generate_content with prompt
-            response = model.generate_content(prompt)
-            optimized_resume = response.text.strip()
+            response = genai.generate_text(model="gemini-1.5-turbo", prompt=prompt)
+            optimized_resume = response['candidates'][0]['output'].strip()
+
         except Exception as e:
             return f"An error occurred while processing your resume: {str(e)}", 500
         
@@ -89,24 +89,29 @@ def improve_look_and_feel():
                       f"name, contact_info, summary, experience (with responsibilities), education, skills, and achievements.\n\n"
                       f"Resume:\n{resume_content}")
 
-            response = model.generate_content(prompt)
+            response = genai.generate_text(model="gemini-1.5-flash", prompt=prompt)
 
-            raw_response = response.text.strip()
+            raw_response = response['candidates'][0]['output'].strip()
             print("Raw Gemini Response:", raw_response)
 
+            # Clean the response (if there are issues with extra characters)
             clean_response = re.sub(r'```json|```', '', raw_response).strip()
 
             if not clean_response:
                 return "Google Gemini API returned an empty response.", 500
 
             try:
+                # Safely parse the JSON, and handle any errors
                 formatted_resume = json.loads(clean_response)
             except json.JSONDecodeError as e:
+                # Log raw response for debugging
+                print(f"Error parsing the JSON response: {e}")
+                print("Raw Response:", raw_response)
                 return f"Error parsing the JSON response: {str(e)}", 500
 
             formatted_resume = formatted_resume if isinstance(formatted_resume, dict) else {}
 
-            if isinstance(formatted_resume['achievements'], list):
+            if isinstance(formatted_resume.get('achievements'), list):
                 formatted_resume['achievements'] = [str(ach) for ach in formatted_resume['achievements']]
 
         except Exception as e:
