@@ -1,4 +1,4 @@
-flask
+Flask
 pdfplumber
 google-generativeai
-werkzeug==2.3.6
+python-dotenv
