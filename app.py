@@ -2,7 +2,7 @@ from flask import Flask, request, render_template
 import pdfplumber
 import google.generativeai as genai
 import os
-import json  # Import the missing json module
+import json
 import re
 from dotenv import load_dotenv
 
@@ -58,13 +58,14 @@ def upload_resume():
             return f"Error processing PDF: {str(e)}", 500
 
         try:
-            # Correct Gemini API call as per your provided example
-            model = genai.GenerativeModel("gemini-1.5-flash")
             prompt = (f"Please improve the following resume text based on the job description. "
                       f"Make it more organized, concise, and impactful.\n\n"
                       f"Resume:\n{content}\n\n"
                       f"Job Description:\n{job_description}")
-            response = model.generate_content(prompt)
+            
+            # Correct model usage for generating text
+            model = genai.GenerativeModel("gemini-1.5-flash")
+            response = model.generate_content(prompt=prompt)
             optimized_resume = response.text.strip()
 
         except Exception as e:
@@ -90,8 +91,9 @@ def improve_look_and_feel():
                       f"name, contact_info, summary, experience (with responsibilities), education, skills, and achievements.\n\n"
                       f"Resume:\n{resume_content}")
 
-            # Call Google Gemini API
-            response = genai.generate_content(model="gemini-1.5-flash", prompt=prompt)
+            # Use the correct model call
+            model = genai.GenerativeModel("gemini-1.5-flash")
+            response = model.generate_content(prompt=prompt)
 
             raw_response = response.text.strip()
             print("Raw Gemini Response:", raw_response)
@@ -99,7 +101,6 @@ def improve_look_and_feel():
             # Clean the response
             clean_response = re.sub(r'```json|```', '', raw_response).strip()
 
-            # Validate if the cleaned response looks like valid JSON
             if not clean_response.startswith("{") or not clean_response.endswith("}"):
                 raise ValueError("Response does not appear to be valid JSON")
 
@@ -107,15 +108,12 @@ def improve_look_and_feel():
             try:
                 formatted_resume = json.loads(clean_response)
             except json.JSONDecodeError as e:
-                # Log raw response for debugging
                 print(f"Error parsing the JSON response: {e}")
                 print("Raw Response:", raw_response)
                 return f"Error parsing the JSON response: {str(e)}", 500
 
-            # Ensure the formatted resume is a dictionary
             formatted_resume = formatted_resume if isinstance(formatted_resume, dict) else {}
 
-            # Ensure 'achievements' is properly formatted as a list of strings
             if isinstance(formatted_resume.get('achievements'), list):
                 formatted_resume['achievements'] = [str(ach) for ach in formatted_resume['achievements']]
 
